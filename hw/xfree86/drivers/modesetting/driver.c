@@ -883,10 +883,7 @@ PreInit(ScrnInfoPtr pScrn, int flags)
 
     try_enable_glamor(pScrn);
 
-    if (ms->drmmode.glamor) {
-        ms->drmmode.pageflip =
-            xf86ReturnOptValBool(ms->drmmode.Options, OPTION_PAGEFLIP, TRUE);
-    } else {
+    if (!ms->drmmode.glamor) {
         Bool prefer_shadow = TRUE;
 
         if (ms->drmmode.force_24_32) {
@@ -908,9 +905,10 @@ PreInit(ScrnInfoPtr pScrn, int flags)
                    prefer_shadow ? "YES" : "NO",
                    ms->drmmode.force_24_32 ? "FORCE" :
                    ms->drmmode.shadow_enable ? "YES" : "NO");
-
-        ms->drmmode.pageflip = FALSE;
     }
+
+    ms->drmmode.pageflip =
+        xf86ReturnOptValBool(ms->drmmode.Options, OPTION_PAGEFLIP, TRUE);
 
     pScrn->capabilities = 0;
 #ifdef DRM_CAP_PRIME
