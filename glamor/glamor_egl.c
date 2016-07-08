@@ -968,7 +968,7 @@ glamor_egl_init(ScrnInfoPtr scrn, int fd)
 #define GLAMOR_CHECK_EGL_EXTENSION(EXT)  \
 	if (!epoxy_has_egl_extension(glamor_egl->display, "EGL_" #EXT)) {  \
 		ErrorF("EGL_" #EXT " required.\n");  \
-		goto error;  \
+/*		goto error; */ \
 	}
 
 #define GLAMOR_CHECK_EGL_EXTENSIONS(EXT1, EXT2)	 \
@@ -1025,7 +1025,7 @@ glamor_egl_init(ScrnInfoPtr scrn, int fd)
     if (!eglMakeCurrent(glamor_egl->display,
                         EGL_NO_SURFACE, EGL_NO_SURFACE, glamor_egl->context)) {
         xf86DrvMsg(scrn->scrnIndex, X_ERROR,
-                   "Failed to make EGL context current\n");
+                   "Failed to make EGL context currentgl%x egl%x\n", glGetError(), eglGetError());
         goto error;
     }
 
