@@ -1,3 +1,10 @@
+xorg-server (2:1.18.21-3) testing; urgency=medium
+
+  [ Mark Yao ]
+  * glamor: spans: fixup wrong count on glDrawArrays
+
+ -- Randy Li <randy.li@rock-chips.com>  Fri, 30 Sep 2016 09:17:07 +0000
+
 xorg-server (2:1.18.21-2) unstable; urgency=high
   * fixup cursor display on mali400
 
