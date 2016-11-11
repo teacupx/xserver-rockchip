@@ -1,3 +1,10 @@
+xorg-server (2:1.18.21-4) testing; urgency=medium
+
+  [ Mark Yao ]
+  * glamor: fix broken display
+
+ -- Jacob Chen <jacob2.chen@rock-chips.com>  Thu, 11 Nov 2016 18:17:07 +0000
+
 xorg-server (2:1.18.21-3) testing; urgency=medium
 
   [ Mark Yao ]
