@@ -1,3 +1,14 @@
+xorg-server (2:1.18.4-1) testing; urgency=medium
+
+  [ Jacob Chen ]
+  * Revert "glamor: Flip around conditionals in RepeatNone fixups."
+  * Revert "glamor: Fix sampling outside of RGBx source/mask pictures"
+  * Revert "glamor: Cut down a bunch of conditional handling for RepeatFix."
+  * debian: update debian build version
+  [ Randy Li ]
+
+ -- Randy Li <randy.li@rock-chips.com>  Thu, 22 Dec 2016 02:21:13 +0000
+
 xorg-server (2:1.18.21-4) testing; urgency=medium
 
   [ Mark Yao ]

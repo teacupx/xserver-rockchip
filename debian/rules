@@ -64,7 +64,7 @@ else
 	dri += --disable-dri3
 endif
 
-config_backend = --disable-config-dbus --disable-config-hal
+config_backend = --disable-config-hal
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	config_backend += --enable-config-udev
 else ifeq ($(DEB_HOST_ARCH_OS), kfreebsd)
@@ -106,7 +106,6 @@ confflags += \
 	     --with-xkb-path=/usr/share/X11/xkb \
 	     --with-xkb-output=/var/lib/xkb \
 	     --with-shared-memory-dir=/dev/shm \
-	     --disable-install-libxf86config \
 	     --enable-mitshm \
 	     --enable-xres \
 	     --disable-xcsecurity \
@@ -159,8 +158,6 @@ confflags_main = \
 confflags_udeb = \
 	--with-default-font-path="built-ins" \
 	--disable-aiglx \
-	--disable-glx-tls \
-	--disable-registry \
 	--disable-composite \
 	--disable-record \
 	--disable-xv \
