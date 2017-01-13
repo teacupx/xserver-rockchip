@@ -883,11 +883,11 @@ drmmode_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
 		}
 		xf86Msg(X_INFO, "active crtcs: %d\n", active_crtc_num);
 		if (active_crtc_num>=2) {
-			xf86CrtcPtr crtc_1 = xf86_config->output[1]->crtc;
+			xf86CrtcPtr crtc_1 = xf86_config->output[0]->crtc;
 			drmmode_crtc_private_ptr drmmode_crtc_1 = crtc_1->driver_private;
 			drmmode_ptr drmmode_1 = drmmode_crtc_1->drmmode;
-			drmmode_crtc_1->master_w = xf86_config->output[0]->crtc->mode.HDisplay;
-			drmmode_crtc_1->master_h = xf86_config->output[0]->crtc->mode.VDisplay;
+			drmmode_crtc_1->master_w = xf86_config->output[1]->crtc->mode.HDisplay;
+			drmmode_crtc_1->master_h = xf86_config->output[1]->crtc->mode.VDisplay;
 			drmmode_crtc_1->is_mirror = TRUE;
 			primary_planes_scale(crtc_1, drmmode_1->fb_id,
 					drmmode_crtc_1->master_w, drmmode_crtc_1->master_h);
