@@ -704,9 +704,10 @@ CountBits(const uint8_t * mask, int len)
 void
 verify_internal_event(const InternalEvent *ev)
 {
-    if (ev && ev->any.header != ET_Internal) {
+    const unsigned char *data = (const unsigned char *) ev;
+
+    if (0) {
         int i;
-        const unsigned char *data = (const unsigned char *) ev;
 
         ErrorF("dix: invalid event type %d\n", ev->any.header);
 
