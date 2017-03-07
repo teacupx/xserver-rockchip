@@ -89,6 +89,11 @@ typedef struct {
     Bool reverse_prime_offload_mode;
 
     Bool is_secondary;
+
+    PixmapPtr fbcon_pixmap;
+
+    Bool dri2_flipping;
+    Bool present_flipping;
 } drmmode_rec, *drmmode_ptr;
 
 typedef struct {
