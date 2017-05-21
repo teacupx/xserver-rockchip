@@ -886,6 +886,8 @@ ms_dri2_schedule_swap(ClientPtr client, DrawablePtr draw,
     if (can_flip(scrn, draw, front, back)) {
         frame_info->type = MS_DRI2_QUEUE_FLIP;
         flip = 1;
+    } else if (!ms->drmmode.dri2_vsync) {
+        goto blit_fallback;
     }
 
     /* Correct target_msc by 'flip' if frame_info->type == MS_DRI2_QUEUE_FLIP.
