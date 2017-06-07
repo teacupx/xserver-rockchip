@@ -828,6 +828,7 @@ ms_dri2_schedule_swap(ClientPtr client, DrawablePtr draw,
 {
     ScreenPtr screen = draw->pScreen;
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
+    modesettingPtr ms = modesettingPTR(scrn);
     int ret, flip = 0;
     xf86CrtcPtr crtc = ms_dri2_crtc_covering_drawable(draw);
     ms_dri2_frame_event_ptr frame_info = NULL;
@@ -837,6 +838,9 @@ ms_dri2_schedule_swap(ClientPtr client, DrawablePtr draw,
     ms_queue_flag ms_flag = MS_QUEUE_ABSOLUTE;
     uint64_t queued_msc;
 
+    if (!ms->drmmode.dri2_vsync)
+        goto blit_fallback;
+    
     /* Drawable not displayed... just complete the swap */
     if (!crtc)
         goto blit_fallback;
