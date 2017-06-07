@@ -849,6 +849,9 @@ ms_dri2_schedule_swap(ClientPtr client, DrawablePtr draw,
     uint64_t request_msc;
     uint32_t seq;
 
+    if (!ms->drmmode.dri2_vsync)
+        goto blit_fallback;
+    
     /* Drawable not displayed... just complete the swap */
     if (!crtc)
         goto blit_fallback;
