@@ -1067,6 +1067,7 @@ glamor_generate_radial_gradient_picture(ScreenPtr screen,
 
     /* Now rendering. */
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glamor_flush();
 
     /* Do the clear logic. */
     if (stops_count > RADIAL_SMALL_STOPS) {
@@ -1410,6 +1411,7 @@ glamor_generate_linear_gradient_picture(ScreenPtr screen,
 
     /* Now rendering. */
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glamor_flush();
 
     /* Do the clear logic. */
     if (stops_count > LINEAR_SMALL_STOPS) {
