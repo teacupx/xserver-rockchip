@@ -97,7 +97,8 @@ typedef struct {
     drmEventContext event_context;
     drmmode_bo front_bo;
     Bool sw_cursor;
-
+    Bool dri2_vsync;
+    
     /* Broken-out options. */
     OptionInfoPtr Options;
 

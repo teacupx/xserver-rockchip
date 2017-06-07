@@ -131,6 +131,7 @@ static const OptionInfoRec Options[] = {
     {OPTION_PAGEFLIP, "PageFlip", OPTV_BOOLEAN, {0}, FALSE},
     {OPTION_ZAPHOD_HEADS, "ZaphodHeads", OPTV_STRING, {0}, FALSE},
     {OPTION_DOUBLE_SHADOW, "DoubleShadow", OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_DRI2_VSYNC, "Dri2Vsync", OPTV_BOOLEAN, {0}, TRUE},
     {-1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -992,6 +993,11 @@ PreInit(ScrnInfoPtr pScrn, int flags)
     if (!ret) {
         ms->cursor_height = value;
     }
+
+    if (!xf86ReturnOptValBool(ms->drmmode.Options, OPTION_DRI2_VSYNC, TRUE)) 
+        ms->drmmode.dri2_vsync = FALSE;
+    else
+        ms->drmmode.dri2_vsync = TRUE;
 
     try_enable_glamor(pScrn);
 
