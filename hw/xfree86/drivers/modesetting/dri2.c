@@ -35,7 +35,6 @@
 #ifdef HAVE_DIX_CONFIG_H
 #include "dix-config.h"
 #endif
-
 #include <time.h>
 #include "list.h"
 #include "xf86.h"
@@ -637,6 +636,7 @@ ms_dri2_frame_event_handler(uint64_t msc,
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
     uint32_t tv_sec = usec / 1000000;
     uint32_t tv_usec = usec % 1000000;
+    modesettingPtr ms = modesettingPTR(scrn);
 
     if (!drawable) {
         ms_dri2_del_frame_event(frame_info);
@@ -645,10 +645,18 @@ ms_dri2_frame_event_handler(uint64_t msc,
 
     switch (frame_info->type) {
     case MS_DRI2_QUEUE_FLIP:
-        if (can_flip(scrn, drawable, frame_info->front, frame_info->back) &&
-            ms_dri2_schedule_flip(frame_info)) {
-            ms_dri2_exchange_buffers(drawable, frame_info->front, frame_info->back);
-            break;
+        if (can_flip(scrn, drawable, frame_info->front, frame_info->back)) {
+            if (!ms->drmmode.dri2_vsync) {
+                ms_dri2_exchange_buffers(drawable, frame_info->front, frame_info->back);
+                DRI2SwapComplete(frame_info->client, drawable, msc, tv_sec, tv_usec,
+                         DRI2_FLIP_COMPLETE,
+                         frame_info->client ? frame_info->event_complete : NULL,
+                         frame_info->event_data);
+                break;
+            } else if (ms_dri2_schedule_flip(frame_info)) {
+                ms_dri2_exchange_buffers(drawable, frame_info->front, frame_info->back);
+                break;
+            }
         }
         /* else fall through to blit */
     case MS_DRI2_QUEUE_SWAP:
