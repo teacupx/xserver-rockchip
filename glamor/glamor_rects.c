@@ -133,7 +133,6 @@ glamor_poly_fill_rect_gl(DrawablePtr drawable,
             }
         }
     }
-    glamor_flush();
 
     ret = TRUE;
 

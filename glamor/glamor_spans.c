@@ -141,7 +141,6 @@ glamor_fill_spans_gl(DrawablePtr drawable,
             }
         }
     }
-    glamor_flush();
 
     ret = TRUE;
 
