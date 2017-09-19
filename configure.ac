@@ -1072,6 +1072,7 @@ else
     MONOTONIC_CLOCK=no
 fi
 
+MONOTONIC_CLOCK=yes
 AC_MSG_RESULT([$MONOTONIC_CLOCK])
 
 if test "x$MONOTONIC_CLOCK" = xyes; then
