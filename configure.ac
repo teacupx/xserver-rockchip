@@ -1008,6 +1008,7 @@ else
     MONOTONIC_CLOCK=no
 fi
 
+MONOTONIC_CLOCK=yes
 AC_MSG_RESULT([$MONOTONIC_CLOCK])
 if test "$MONOTONIC_CLOCK" = "guessing yes"; then
 	MONOTONIC_CLOCK=yes
