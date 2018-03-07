@@ -416,6 +416,16 @@ xf86_crtc_transform_cursor_position(xf86CrtcPtr crtc, int *x, int *y)
     *y -= dy;
 }
 
+typedef struct {
+    void* drmmode;
+    void* mode_crtc;
+	Bool is_mirror;
+	int master_w;
+	int master_h;
+	// ignore other
+} drmmode_crtc_private_rec, *drmmode_crtc_private_ptr;
+
+
 static void
 xf86_crtc_set_cursor_position(xf86CrtcPtr crtc, int x, int y)
 {
@@ -424,6 +434,7 @@ xf86_crtc_set_cursor_position(xf86CrtcPtr crtc, int x, int y)
     xf86CursorInfoPtr cursor_info = xf86_config->cursor_info;
     DisplayModePtr mode = &crtc->mode;
     int crtc_x = x, crtc_y = y;
+	drmmode_crtc_private_ptr drmmode_crtc = crtc->driver_private;
 
     /*
      * Transform position of cursor on screen
@@ -438,7 +449,14 @@ xf86_crtc_set_cursor_position(xf86CrtcPtr crtc, int x, int y)
     /*
      * Disable the cursor when it is outside the viewport
      */
-    if (crtc_x >= mode->HDisplay || crtc_y >= mode->VDisplay ||
+	if (drmmode_crtc && drmmode_crtc->is_mirror) {
+		if (x >= drmmode_crtc->master_w || y >= drmmode_crtc->master_h ||
+			x <= -cursor_info->MaxWidth || y <= -cursor_info->MaxHeight) {
+			crtc->cursor_in_range = FALSE;
+			x = 0;
+			y = 0;
+		}
+	} else if (crtc_x >= mode->HDisplay || crtc_y >= mode->VDisplay ||
         crtc_x <= -cursor_info->MaxWidth || crtc_y <= -cursor_info->MaxHeight) {
         crtc->cursor_in_range = FALSE;
         xf86_crtc_hide_cursor(crtc);

@@ -417,6 +417,12 @@ drmmode_EnableSharedPixmapFlipping(xf86CrtcPtr crtc, drmmode_ptr drmmode,
     return TRUE;
 }
 
+#define DRM_CLIENT_CAP_UNIVERSAL_PLANES 2 /* from libdrm 2.4.55 */
+#define WIDTH_4K		3840
+#define HEIGHT_4K		2160
+#define WIDTH_FAKE		1920
+#define HEIGHT_FAKE		1080
+
 void
 drmmode_DisableSharedPixmapFlipping(xf86CrtcPtr crtc, drmmode_ptr drmmode)
 {
@@ -433,9 +439,13 @@ drmmode_DisableSharedPixmapFlipping(xf86CrtcPtr crtc, drmmode_ptr drmmode)
 }
 
 static void
-drmmode_ConvertFromKMode(ScrnInfoPtr scrn,
+drmmode_ConvertFromKMode(xf86OutputPtr output,
                          drmModeModeInfo * kmode, DisplayModePtr mode)
 {
+	ScrnInfoPtr scrn = output->scrn;
+	drmmode_output_private_ptr drmmode_output = output->driver_private;
+	drmmode_ptr drmmode = drmmode_output->drmmode;
+
     memset(mode, 0, sizeof(DisplayModeRec));
     mode->status = MODE_OK;
 
@@ -460,13 +470,34 @@ drmmode_ConvertFromKMode(ScrnInfoPtr scrn,
         mode->type = M_T_DRIVER;
     if (kmode->type & DRM_MODE_TYPE_PREFERRED)
         mode->type |= M_T_PREFERRED;
+
+	if ((mode->HDisplay>=WIDTH_4K) && (mode->VDisplay>=HEIGHT_4K)
+		&& (mode->HDisplay!=1536 && mode->VDisplay!=2048)) {
+		struct real_mode* r_mode = drmmode_output->r_mode + drmmode_output->r_mode_index;
+		mode->HDisplay = WIDTH_FAKE;
+		mode->VDisplay = HEIGHT_FAKE;
+		r_mode->hsync_start = kmode->hsync_start;
+		r_mode->vsync_start = kmode->vsync_start;
+		r_mode->hdisplay = kmode->hdisplay;
+		r_mode->vdisplay = kmode->vdisplay;
+		r_mode->h_ratio = (float)kmode->hdisplay/(float)mode->HDisplay;
+		r_mode->v_ratio = (float)kmode->vdisplay/(float)mode->VDisplay;
+		xf86Msg(X_INFO, "modesetting: chang mode: (%dx%d)->(%dx%d), ratio(%f %f)\n",
+			kmode->hdisplay, kmode->vdisplay, mode->HDisplay, mode->VDisplay,
+			r_mode->h_ratio, r_mode->v_ratio);
+		drmmode_output->r_mode_index++;
+	}
+
     xf86SetModeCrtc(mode, scrn->adjustFlags);
 }
 
 static void
-drmmode_ConvertToKMode(ScrnInfoPtr scrn,
+drmmode_ConvertToKMode(xf86CrtcPtr crtc,
                        drmModeModeInfo * kmode, DisplayModePtr mode)
 {
+	drmmode_crtc_private_ptr drmmode_crtc = crtc->driver_private;
+	drmmode_ptr drmmode = drmmode_crtc->drmmode;
+
     memset(kmode, 0, sizeof(*kmode));
 
     kmode->clock = mode->Clock;
@@ -487,6 +518,29 @@ drmmode_ConvertToKMode(ScrnInfoPtr scrn,
         strncpy(kmode->name, mode->name, DRM_DISPLAY_MODE_LEN);
     kmode->name[DRM_DISPLAY_MODE_LEN - 1] = 0;
 
+	int i=0;
+	drmmode_output_private_ptr drmmode_output = NULL;
+    xf86CrtcConfigPtr xf86_config = XF86_CRTC_CONFIG_PTR(crtc->scrn);
+	for (i = 0; i < xf86_config->num_output; i++) {
+		xf86OutputPtr output = xf86_config->output[i];
+	
+		if (output->crtc == crtc) {
+			drmmode_output = output->driver_private;
+			break;
+		}
+	}
+	drmmode_crtc->mode_index = NULL;
+	for (i=0; drmmode_output && i<drmmode_output->r_mode_index; i++) {
+		if (mode->HSyncStart == drmmode_output->r_mode[i].hsync_start &&
+			mode->VSyncStart == drmmode_output->r_mode[i].vsync_start) {
+			kmode->hdisplay = drmmode_output->r_mode[i].hdisplay;
+			kmode->vdisplay = drmmode_output->r_mode[i].vdisplay;
+			drmmode_crtc->mode_index = &drmmode_output->r_mode[i];
+			xf86Msg(X_INFO, "modesetting: restore kmode: (%dx%d)->(%dx%d)\n",
+				mode->HDisplay, mode->VDisplay, kmode->hdisplay, kmode->vdisplay);
+			break;
+		}
+	}
 }
 
 static void
@@ -596,6 +650,123 @@ drmmode_copy_fb(ScrnInfoPtr pScrn, drmmode_ptr drmmode)
 #endif
 }
 
+static void
+primary_planes_init( xf86CrtcPtr crtc )
+{
+    drmmode_crtc_private_ptr drmmode_crtc = crtc->driver_private;
+    drmmode_ptr  drmmode = drmmode_crtc->drmmode;
+    drmModePlaneRes  *plane_resources;
+    int i, j, k;
+
+	drmmode_crtc->is_mirror = FALSE;
+
+    drmSetClientCap( drmmode->fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1 );
+
+    plane_resources = drmModeGetPlaneResources( drmmode->fd );
+    if ( plane_resources == NULL )
+        return;
+
+    for ( i = 0; drmmode_crtc->primary_plane_id == 0 && i < plane_resources->count_planes; i++ )
+    {
+        drmModePlane            *drm_plane;
+        drmModeObjectPropertiesPtr  proplist;
+        int             is_primary = -1;
+
+        drm_plane = drmModeGetPlane( drmmode->fd,
+                         plane_resources->planes[i] );
+        if ( drm_plane == NULL )
+            continue;
+
+        if ( !(drm_plane->possible_crtcs & (1 << drmmode_crtc->index) ) )
+        {
+            goto free_plane;
+        }
+
+        proplist = drmModeObjectGetProperties( drmmode->fd,
+                               drm_plane->plane_id,
+                               DRM_MODE_OBJECT_PLANE );
+        if ( proplist == NULL )
+            goto free_plane;
+
+        for ( j = 0; is_primary == -1 && j < proplist->count_props; j++ )
+        {
+            drmModePropertyPtr prop;
+
+            prop = drmModeGetProperty( drmmode->fd, proplist->props[j] );
+            if ( !prop )
+                continue;
+
+            if ( strcmp( prop->name, "type" ) == 0 )
+            {
+                for ( k = 0; k < prop->count_enums; k++ )
+                {
+                    if ( prop->enums[k].value != proplist->prop_values[j] )
+                        continue;
+                    is_primary = strcmp( prop->enums[k].name, "Primary" ) == 0;
+                    break;
+                }
+            }
+            drmModeFreeProperty( prop );
+        }
+
+        if ( is_primary )
+        {
+            drmmode_crtc->primary_plane_id = drm_plane->plane_id;
+
+            xf86DrvMsg( crtc->scrn->scrnIndex, X_INFO,
+                    "primary plane id %d , crtc index %d \n", drmmode_crtc->primary_plane_id,
+                    drmmode_crtc->index );
+
+            for ( j = 0; j < proplist->count_props; j++ )
+            {
+                drmModePropertyPtr prop;
+                prop = drmModeGetProperty( drmmode->fd, proplist->props[j] );
+                if ( !prop )
+                    continue;
+
+                drmModeFreeProperty( prop );
+            }
+        }
+        drmModeFreeObjectProperties( proplist );
+free_plane:
+        drmModeFreePlane( drm_plane );
+    }
+}
+
+static Bool
+primary_planes_scale(xf86CrtcPtr crtc, unsigned int fb_id, int w, int h)
+{
+    drmmode_crtc_private_ptr drmmode_crtc  = crtc->driver_private;
+    drmmode_ptr drmmode = drmmode_crtc->drmmode;
+    ScrnInfoPtr pScrn = crtc->scrn;
+    int ret = 0;
+    int crtc_x = 0, crtc_y = 0, crtc_w = 0, crtc_h = 0;
+
+    drmModeCrtcPtr c = drmModeGetCrtc( drmmode->fd, drmmode_crtc->mode_crtc->crtc_id );
+    if ( c && c->mode_valid )
+    {
+        crtc_x  = c->x;
+        crtc_y  = c->y;
+        crtc_w  = c->width;
+        crtc_h  = c->height;
+    }
+    drmModeFreeCrtc( c );
+
+	xf86DrvMsg( crtc->scrn->scrnIndex, X_INFO, "set mirror\n");
+    ret = drmModeSetPlane( drmmode->fd, drmmode_crtc->primary_plane_id,
+                   drmmode_crtc->mode_crtc->crtc_id, fb_id, 0,
+                   crtc_x, crtc_y, crtc_w, crtc_h,
+                   0, 0, w<<16, h<<16 );
+
+    if ( ret )
+    {
+        xf86DrvMsg( crtc->scrn->scrnIndex, X_ERROR,
+                "set plane failed! \n" );
+    }
+
+    return(TRUE);
+}
+
 static Bool
 drmmode_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
                        Rotation rotation, int x, int y)
@@ -654,7 +825,7 @@ drmmode_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
         crtc->funcs->gamma_set(crtc, crtc->gamma_red, crtc->gamma_green,
                                crtc->gamma_blue, crtc->gamma_size);
 
-        drmmode_ConvertToKMode(crtc->scrn, &kmode, mode);
+        drmmode_ConvertToKMode(crtc, &kmode, mode);
 
         fb_id = drmmode->fb_id;
         if (drmmode_crtc->prime_pixmap) {
@@ -695,6 +866,32 @@ drmmode_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
             goto done;
         } else
             ret = TRUE;
+
+		drmmode_crtc->is_mirror= FALSE;
+		int active_crtc_num = 0;
+		for (i = 0; i < xf86_config->num_output; i++) {
+			xf86CrtcPtr crtc_1 = xf86_config->output[i]->crtc;
+			if (crtc_1 && crtc_1->enabled) {
+				xf86Msg(X_INFO, "active crtc[%d]=%p:(%d,%d)(%dx%d)\n", i, crtc_1,
+					crtc_1->x, crtc_1->y, crtc_1->mode.HDisplay, crtc_1->mode.VDisplay);
+				if (crtc_1->x!=0 || crtc_1->y!=0)
+					break;
+				if (crtc_1->mode.HDisplay==0 && crtc_1->mode.VDisplay==0)
+					break;
+				++active_crtc_num;
+			}
+		}
+		xf86Msg(X_INFO, "active crtcs: %d\n", active_crtc_num);
+		if (active_crtc_num>=2) {
+			xf86CrtcPtr crtc_1 = xf86_config->output[1]->crtc;
+			drmmode_crtc_private_ptr drmmode_crtc_1 = crtc_1->driver_private;
+			drmmode_ptr drmmode_1 = drmmode_crtc_1->drmmode;
+			drmmode_crtc_1->master_w = xf86_config->output[0]->crtc->mode.HDisplay;
+			drmmode_crtc_1->master_h = xf86_config->output[0]->crtc->mode.VDisplay;
+			drmmode_crtc_1->is_mirror = TRUE;
+			primary_planes_scale(crtc_1, drmmode_1->fb_id,
+					drmmode_crtc_1->master_w, drmmode_crtc_1->master_h);
+		}
 
         if (crtc->scrn->pScreen)
             xf86CrtcSetScreenSubpixelOrder(crtc->scrn->pScreen);
@@ -745,6 +942,15 @@ drmmode_set_cursor_position(xf86CrtcPtr crtc, int x, int y)
 {
     drmmode_crtc_private_ptr drmmode_crtc = crtc->driver_private;
     drmmode_ptr drmmode = drmmode_crtc->drmmode;
+
+	if (drmmode_crtc->mode_index) {
+		x = (float)x * (drmmode_crtc->mode_index->h_ratio);
+		y = (float)y * (drmmode_crtc->mode_index->v_ratio);
+	}
+	if (drmmode_crtc->is_mirror) {
+		x = x * crtc->mode.HDisplay / drmmode_crtc->master_w;
+		y = y * crtc->mode.VDisplay / drmmode_crtc->master_h;
+	}
 
     drmModeMoveCursor(drmmode->fd, drmmode_crtc->mode_crtc->crtc_id, x, y);
 }
@@ -1146,11 +1352,13 @@ drmmode_crtc_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, drmModeResPtr mode_res
     drmmode_crtc->mode_crtc =
         drmModeGetCrtc(drmmode->fd, mode_res->crtcs[num]);
     drmmode_crtc->drmmode = drmmode;
+    drmmode_crtc->index = num;
     drmmode_crtc->vblank_pipe = drmmode_crtc_vblank_pipe(num);
     crtc->driver_private = drmmode_crtc;
 
     /* Hide any cursors which may be active from previous users */
     drmModeSetCursor(drmmode->fd, drmmode_crtc->mode_crtc->crtc_id, 0, 0, 0);
+    primary_planes_init(crtc);
 
     /* Mark num'th crtc as in use on this device. */
     ms_ent->assigned_crtcs |= (1 << num);
@@ -1350,10 +1558,11 @@ drmmode_output_get_modes(xf86OutputPtr output)
     drmmode_output_attach_tile(output);
 
     /* modes should already be available */
+	drmmode_output->r_mode_index = 0;
     for (i = 0; i < koutput->count_modes; i++) {
         Mode = xnfalloc(sizeof(DisplayModeRec));
 
-        drmmode_ConvertFromKMode(output->scrn, &koutput->modes[i], Mode);
+        drmmode_ConvertFromKMode(output, &koutput->modes[i], Mode);
         Modes = xf86ModesAdd(Modes, Mode);
 
     }
