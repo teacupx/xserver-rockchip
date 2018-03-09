@@ -65,7 +65,7 @@ endif
 VENDOR = $(shell lsb_release -i -s)
 SUPPORT = https://www.debian.org/support
 
-SOURCE_NAME    :=  xorg-server
+SOURCE_NAME    :=  xorg-server-rockchip
 SOURCE_VERSION := $(shell dpkg-parsechangelog | awk -F': ' '/^Version: / {print $$2}')
 
 # disable-static is so we don't get libfoo.a for modules.  now if only we could
@@ -175,7 +175,7 @@ build-source-stamp:
         --transform 's,^,xorg-server/,' \
 	--exclude=debian \
 	--exclude=autom4te.cache \
-        -cf - * | xz > build-source/xorg-server.tar.xz
+        -cf - * | xz > build-source/xorg-server-rockchip.tar.xz
 	>$@
 
 override_dh_auto_configure:
@@ -235,29 +235,29 @@ abibumpcheck: debian/serverminver $(QUILT_STAMPFN)
 
 override_dh_fixperms-arch:
 	dh_fixperms
-	chown root:root $(CURDIR)/debian/xserver-xorg-legacy/usr/lib/xorg/Xorg.wrap
-	chmod ug+s $(CURDIR)/debian/xserver-xorg-legacy/usr/lib/xorg/Xorg.wrap
+	chown root:root $(CURDIR)/debian/xserver-xorg-legacy-rockchip/usr/lib/xorg/Xorg.wrap
+	chmod ug+s $(CURDIR)/debian/xserver-xorg-legacy-rockchip/usr/lib/xorg/Xorg.wrap
 
 override_dh_install:
 	dh_install --fail-missing
-	install -d $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg
+	install -d $(CURDIR)/debian/xserver-xorg-dev-rockchip/usr/share/xserver-xorg
 	# Extract only the major ABI version:
 	abi_videodrv=`PKG_CONFIG_PATH=debian/tmp/main/usr/lib/pkgconfig pkg-config --variable=abi_videodrv xorg-server|cut -d . -f 1`; \
-	echo videoabi=xorg-video-abi-$$abi_videodrv > debian/xserver-xorg-core.substvars && \
-	echo "xorg-video-abi-$$abi_videodrv, xserver-xorg-core (>= $(serverminver))" > debian/xserver-xorg-dev/usr/share/xserver-xorg/videodrvdep
+	echo videoabi=xorg-video-abi-$$abi_videodrv > debian/xserver-xorg-core-rockchip.substvars && \
+	echo "xorg-video-abi-$$abi_videodrv, xserver-xorg-core-rockchip (>= $(serverminver))" > debian/xserver-xorg-dev-rockchip/usr/share/xserver-xorg/videodrvdep
 	abi_xinput=`PKG_CONFIG_PATH=debian/tmp/main/usr/lib/pkgconfig pkg-config --variable=abi_xinput xorg-server|cut -d . -f 1`; \
-	echo inputabi=xorg-input-abi-$$abi_xinput >> debian/xserver-xorg-core.substvars && \
-	echo "xorg-input-abi-$$abi_xinput, xserver-xorg-core (>= $(serverminver))" > debian/xserver-xorg-dev/usr/share/xserver-xorg/xinputdep
+	echo inputabi=xorg-input-abi-$$abi_xinput >> debian/xserver-xorg-core-rockchip.substvars && \
+	echo "xorg-input-abi-$$abi_xinput, xserver-xorg-core-rockchip (>= $(serverminver))" > debian/xserver-xorg-dev-rockchip/usr/share/xserver-xorg/xinputdep
 
 
 	# save the configure flags so that packages like vnc, tightvnc, tigervnc
 	# know how the package was built.
 	echo 'xserver_confflags = $(confflags) $(confflags_main)' \
-		> debian/xserver-xorg-dev/usr/share/xserver-xorg/configure_flags.mk
+		> debian/xserver-xorg-dev-rockchip/usr/share/xserver-xorg/configure_flags.mk
 
-	install -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
-	install -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
+	install -m 755 -d debian/xserver-xorg-core-rockchip/usr/share/bug/xserver-xorg-core
+	install -m 755 debian/xserver-xorg-core-rockchip.bug.script debian/xserver-xorg-core-rockchip/usr/share/bug/xserver-xorg-core/script
 ifeq ($(DEB_HOST_ARCH_OS), linux)
-	install -d debian/xserver-xorg-core/lib/udev/rules.d
-	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d
+	install -d debian/xserver-xorg-core-rockchip/lib/udev/rules.d
+	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core-rockchip/lib/udev/rules.d
 endif

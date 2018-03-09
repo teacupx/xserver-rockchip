@@ -1,3 +1,9 @@
+xorg-server-rockchip (2:1.19.3-1endless1) eos; urgency=medium
+
+  * Change package name
+
+ -- Carlo Caione <carlo@endlessm.com>  Fri, 09 Mar 2018 09:46:13 +0000
+
 xorg-server (2:1.19.3-1) unstable; urgency=medium
 
   * rebase for rockchip soc
