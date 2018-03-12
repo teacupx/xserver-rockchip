@@ -107,7 +107,7 @@ Vcs-Browser: https://anonscm.debian.org/cgit/pkg-xorg/xserver/xorg-server.git
 Homepage: https://www.x.org/
 
 Package: xserver-xorg-core-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  xserver-common-rockchip (>= ${source:Version}),
  keyboard-configuration [linux-any kfreebsd-any],
@@ -147,7 +147,7 @@ Description: Xorg X server - core server
  This package is built from the X.org xserver module.
 
 Package: xserver-xorg-dev-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  libpixman-1-dev (>= 0.27.2),
  x11proto-core-dev (>= 7.0.31),
@@ -188,7 +188,7 @@ Description: Xorg X server - development files
  This package is built from the X.org xserver module.
 
 Package: xdmx-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  xserver-common-rockchip (>= ${source:Version}),
  ${shlibs:Depends},
@@ -209,7 +209,7 @@ Description: distributed multihead X server
  This package is built from the X.org xserver module.
 
 Package: xdmx-tools-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  xdmx-rockchip,
  ${shlibs:Depends},
@@ -224,7 +224,7 @@ Description: Distributed Multihead X tools
  This package is built from the X.org xserver module.
 
 Package: xnest-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  xserver-common-rockchip (>= ${source:Version}),
  ${shlibs:Depends},
@@ -245,7 +245,7 @@ Description: Nested X server
  This package is built from the X.org xserver module.
 
 Package: xvfb-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  xserver-common-rockchip (>= ${source:Version}),
  ${shlibs:Depends},
@@ -275,7 +275,7 @@ Description: Virtual Framebuffer 'fake' X server
  This package is built from the X.org xserver module.
 
 Package: xserver-xephyr-rockchip
-Architecture: any
+Architecture: armhf
 Depends:
  xserver-common-rockchip (>= ${source:Version}),
  ${shlibs:Depends},
@@ -294,7 +294,7 @@ Description: nested X server
  This package is built from the X.org xserver module.
 
 Package: xserver-common-rockchip
-Architecture: all
+Architecture: armhf
 Multi-Arch: foreign
 Depends:
  x11-common,
@@ -309,7 +309,7 @@ Description: common files used by various X servers
  This package provides files necessary for all X.Org based X servers.
 
 Package: xorg-server-source-rockchip
-Architecture: all
+Architecture: armhf
 Depends:
  ${misc:Depends},
 Description: Xorg X server - source files
@@ -323,7 +323,7 @@ Description: Xorg X server - source files
  you probably want xserver-xorg and/or xserver-xorg-core instead.
 
 Package: xserver-xorg-legacy-rockchip
-Architecture: any
+Architecture: armhf
 Priority: extra
 Depends:
  xserver-common-rockchip (>= ${source:Version}),
