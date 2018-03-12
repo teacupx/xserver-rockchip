@@ -1,3 +1,5 @@
+AM_DISTCHECK_CONFIGURE_FLAGS= \
+	--disable-unit-tests
 AUTOMAKE_OPTIONS=nostdinc
 
 # Required for automake < 1.14
