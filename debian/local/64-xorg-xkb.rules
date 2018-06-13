@@ -3,7 +3,7 @@ SUBSYSTEM!="input", GOTO="xorg_xkb_end"
 KERNEL!="event*", GOTO="xorg_xkb_end"
 
 # import keyboard layout from /etc/default/keyboard
-ENV{ID_INPUT_KEY}=="?*", IMPORT{file}="/etc/default/keyboard"
+ENV{ID_INPUT_KEYBOARD}=="?*", IMPORT{file}="/etc/default/keyboard"
 
 # For chromebook we need to change XKB model
 ATTRS{name}=="cros_ec", ENV{XKBMODEL}="chromebook"
