@@ -153,17 +153,7 @@ compCheckRedirect(WindowPtr pWin)
     Bool should;
 
     should = pWin->realized && (pWin->drawable.class != InputOnly) &&
-             (cw != NULL) && (pWin->parent != NULL);
-
-    if (should) {
-            ScreenPtr pScreen = pWin->drawable.pScreen;
-
-            if (pWin->drawable.x == pScreen->x &&
-                pWin->drawable.y == pScreen->y &&
-                pWin->drawable.width ==  pScreen->width &&
-                pWin->drawable.height == pScreen->height)
-            should = FALSE;
-    }
+        (cw != NULL) && (pWin->parent != NULL);
 
     /* Never redirect the overlay window */
     if (cs->pOverlayWin != NULL) {
