@@ -155,7 +155,7 @@ glamor_get_flink_name(int fd, int handle, int *name)
 }
 
 static Bool
-glamor_create_texture_from_image(ScreenPtr screen,
+glamor_create_texture_from_image(ScreenPtr screen, struct gbm_bo *bo,
                                  EGLImageKHR image, GLuint * texture)
 {
     struct glamor_screen_private *glamor_priv =
@@ -170,6 +170,19 @@ glamor_create_texture_from_image(ScreenPtr screen,
 
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    /* Mali Midgard r14p0-01rel0 has a bug where in the case of a texture that
+     * is bound to a bo that has a corresponding EGLImage, it will decref the
+     * bo upon glDeleteTextures().
+     *
+     * However there is no equivalent incref upon binding the texture,
+     * so it is unbalanced, and that leads to memory corruption under
+     * glDeleteTextures().
+     *
+     * Work around the Mali bug by adding the symmetrical reference here.
+     */
+    if (bo)
+        gbm_bo_ref(bo);
 
     return TRUE;
 }
@@ -249,6 +262,8 @@ glamor_egl_create_textured_pixmap(PixmapPtr pixmap, int handle, int stride)
     ScrnInfoPtr scrn = xf86ScreenToScrn(screen);
     struct glamor_screen_private *glamor_priv =
         glamor_get_screen_private(screen);
+    struct glamor_pixmap_private *pixmap_priv =
+        glamor_get_pixmap_private(pixmap);
     struct glamor_egl_screen_private *glamor_egl;
     EGLImageKHR image;
     GLuint texture;
@@ -280,7 +295,7 @@ glamor_egl_create_textured_pixmap(PixmapPtr pixmap, int handle, int stride)
         glamor_set_pixmap_type(pixmap, GLAMOR_DRM_ONLY);
         goto done;
     }
-    glamor_create_texture_from_image(screen, image, &texture);
+    glamor_create_texture_from_image(screen, pixmap_priv->bo, image, &texture);
     glamor_set_pixmap_type(pixmap, GLAMOR_TEXTURE_DRM);
     glamor_set_pixmap_texture(pixmap, texture);
     glamor_egl_set_pixmap_image(pixmap, image);
@@ -318,7 +333,7 @@ glamor_egl_create_textured_pixmap_from_gbm_bo(PixmapPtr pixmap,
         glamor_set_pixmap_type(pixmap, GLAMOR_DRM_ONLY);
         goto done;
     }
-    glamor_create_texture_from_image(screen, image, &texture);
+    glamor_create_texture_from_image(screen, bo, image, &texture);
     pixmap_priv->bo = bo;
     gbm_bo_ref(bo);
     glamor_set_pixmap_type(pixmap, GLAMOR_TEXTURE_DRM);
