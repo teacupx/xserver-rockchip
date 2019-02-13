@@ -1,3 +1,9 @@
+xorg-server-rockchip (2:1.20.3-1endless1) eos; urgency=medium
+
+  * Change package name
+
+ -- Daniel Drake <drake@endlessm.com>  Wed, 13 Feb 2019 14:52:24 +0800
+
 xorg-server (2:1.20.3-1) unstable; urgency=medium
 
   * New upstream release.

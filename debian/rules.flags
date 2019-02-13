@@ -3,7 +3,7 @@ DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 VENDOR = $(shell lsb_release -i -s)
 SUPPORT = https://www.debian.org/support
 
-SOURCE_NAME    :=  xorg-server
+SOURCE_NAME    :=  xorg-server-rockchip
 SOURCE_VERSION := $(shell dpkg-parsechangelog | awk -F': ' '/^Version: / {print $$2}')
 
 # disable-static is so we don't get libfoo.a for modules.  now if only we could
@@ -99,7 +99,7 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	confflags_main += \
 		--enable-dri3 \
 		--enable-xselinux \
-		--enable-xwayland \
+		--disable-xwayland \
 		--enable-systemd-logind \
 		--with-systemd-daemon
 else
