@@ -129,14 +129,6 @@ install-headers: Makefile
 		fi							\
 	done
 
-distcheck-hook:
-	cd $(srcdir) && \
-	meson setup _distcheck_build && \
-	meson configure _distcheck_build && \
-	ninja -C _distcheck_build && \
-	rm -rf _distcheck_build && \
-	cd -
-
 EXTRA_DIST += \
 	meson_options.txt \
 	include/xorg-config.h.meson.in \
