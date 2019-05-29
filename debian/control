@@ -85,7 +85,7 @@ Homepage: https://www.x.org/
 Package: xserver-xorg-core-rockchip
 Architecture: armhf
 Depends:
- xserver-common-rockchip (>= ${source:Version}),
+ xserver-common,
  keyboard-configuration [linux-any kfreebsd-any],
  udev (>= 149) [linux-any],
  devd [kfreebsd-any],
@@ -152,7 +152,7 @@ Description: Xorg X server - development files
 Package: xdmx-rockchip
 Architecture: armhf
 Depends:
- xserver-common-rockchip (>= ${source:Version}),
+ xserver-common,
  ${shlibs:Depends},
  ${misc:Depends},
 Description: distributed multihead X server
@@ -188,7 +188,7 @@ Description: Distributed Multihead X tools
 Package: xnest-rockchip
 Architecture: armhf
 Depends:
- xserver-common-rockchip (>= ${source:Version}),
+ xserver-common,
  ${shlibs:Depends},
  ${misc:Depends},
 Recommends: libgl1-mesa-dri (>= 7.1~rc1)
@@ -209,7 +209,7 @@ Description: Nested X server
 Package: xvfb-rockchip
 Architecture: armhf
 Depends:
- xserver-common-rockchip (>= ${source:Version}),
+ xserver-common,
  ${shlibs:Depends},
  ${misc:Depends},
 Recommends: xauth
@@ -239,7 +239,7 @@ Description: Virtual Framebuffer 'fake' X server
 Package: xserver-xephyr-rockchip
 Architecture: armhf
 Depends:
- xserver-common-rockchip (>= ${source:Version}),
+ xserver-common,
  ${shlibs:Depends},
  ${misc:Depends},
 Recommends: libgl1-mesa-dri (>= 7.1~rc1)
@@ -254,21 +254,6 @@ Description: nested X server
  <URL:https://www.x.org>
  .
  This package is built from the X.org xserver module.
-
-Package: xserver-common-rockchip
-Architecture: armhf
-Multi-Arch: foreign
-Depends:
- x11-common,
- xkb-data,
- x11-xkb-utils,
- ${misc:Depends},
-Recommends:
- xfonts-base,
- xauth,
-Replaces: xserver-xorg-core-rockchip (<< 2:1.5.2)
-Description: common files used by various X servers
- This package provides files necessary for all X.Org based X servers.
 
 Package: xorg-server-source-rockchip
 Architecture: armhf
@@ -287,7 +272,7 @@ Description: Xorg X server - source files
 Package: xserver-xorg-legacy-rockchip
 Architecture: armhf
 Depends:
- xserver-common-rockchip (>= ${source:Version}),
+ xserver-common,
  ${shlibs:Depends},
  ${misc:Depends},
 Breaks:

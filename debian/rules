@@ -75,7 +75,7 @@ override_dh_fixperms-arch:
 	chmod ug+s $(CURDIR)/debian/xserver-xorg-legacy-rockchip/usr/lib/xorg/Xorg.wrap
 
 override_dh_install:
-	dh_install --remaining-packages --sourcedir=debian/tmp/main --fail-missing
+	dh_install --remaining-packages --sourcedir=debian/tmp/main --list-missing
 	install -d $(CURDIR)/debian/xserver-xorg-dev-rockchip/usr/share/xserver-xorg
 	# Extract only the major ABI version:
 	set -e; \
