@@ -64,37 +64,6 @@ confflags_main = \
 	--enable-xcsecurity \
 	$(void)
 
-confflags_udeb = \
-	--with-default-font-path="built-ins" \
-	--disable-composite \
-	--disable-record \
-	--disable-xv \
-	--disable-xvmc \
-	--enable-dga \
-	--disable-screensaver \
-	--disable-xdmcp \
-	--disable-xdm-auth-1 \
-	--disable-glx \
-	--disable-dri \
-	--disable-dri2 \
-	--disable-glamor \
-	--disable-xinerama \
-	--disable-xf86vidmode \
-	--disable-xace \
-	--disable-xselinux \
-	--disable-xfree86-utils \
-	--disable-xwayland \
-	--disable-systemd-logind \
-	--without-systemd-daemon \
-	--disable-suid-wrapper \
-	--disable-dmx \
-	--disable-xvfb \
-	--disable-xnest \
-	--disable-kdrive \
-	--disable-xephyr \
-	--with-sha1=libnettle \
-	$(void)
-
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	confflags_main += \
 		--enable-dri3 \
@@ -138,7 +107,6 @@ ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf hppa i386 ia64 mips64
 else
 	confflags_main += --disable-libunwind
 endif
-confflags_udeb += --disable-libunwind
 
 # linux: libdrm needed for kms (hw/xfree86/os-support/linux/lnx_platform.c)
 #        even in udeb
@@ -146,13 +114,10 @@ confflags_udeb += --disable-libunwind
 # hurd: no libdrm
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	confflags_main += --enable-libdrm
-	confflags_udeb += --enable-libdrm
 else ifeq ($(DEB_HOST_ARCH_OS), kfreebsd)
 	confflags_main += --enable-libdrm
-	confflags_udeb += --disable-libdrm
 else # hurd
 	confflags_main += --disable-libdrm
-	confflags_udeb += --disable-libdrm
 endif
 
 ifneq (,$(filter nocheck, $(DEB_BUILD_OPTIONS)))
