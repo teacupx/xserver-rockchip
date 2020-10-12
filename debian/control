@@ -110,7 +110,7 @@ Conflicts:
 Provides:
  ${videoabi},
  ${inputabi},
- xserver-xorg-core,
+ xserver-xorg-core (= 2:1.20.3-1endless1),
  xserver-xorg-video-modesetting,
 Description: Xorg X server - core server
  The Xorg X server is an X server for several architectures and operating
