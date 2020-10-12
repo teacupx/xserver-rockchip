@@ -1,3 +1,10 @@
+xorg-server-rockchip (2:1.20.3-2armbian1) buster; urgency=medium
+
+  * Fix compatibility with standard xserver, correcting "Provides".
+  * Allow build on any architecture, for arm64 compatibility.
+
+ -- JMCC <JMCC@armbian-forums>  Mon, 12 Oct 2020 20:53:27 +0200
+
 xorg-server-rockchip (2:1.20.3-1endless1) eos; urgency=medium
 
   * Change package name
