@@ -49,6 +49,7 @@ confflags_main = \
 	--enable-xdmcp \
 	--enable-xdm-auth-1 \
 	--enable-glx \
+	--enable-gles-highp \
 	--enable-present \
 	--enable-xinerama \
 	--enable-xf86vidmode \
