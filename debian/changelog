@@ -1,3 +1,9 @@
+xorg-server-rockchip (2:1.20.3-3armbian1) buster; urgency=medium
+
+  * Sync with upstream Rockchip, adding EXA and RGA accel, XV output, etc.
+
+ -- JMCC <JMCC@armbian-forums>  Fri, 25 Dec 2020 19:01:51 +0000
+
 xorg-server-rockchip (2:1.20.3-2armbian1) buster; urgency=medium
 
   * Fix compatibility with standard xserver, correcting "Provides".
