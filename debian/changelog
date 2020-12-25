@@ -1,16 +1,15 @@
-xorg-server (2:1.20.4-1) unstable; urgency=medium
+xorg-server-rockchip (2:1.20.3-2armbian1) buster; urgency=medium
 
-  [ Timo Aaltonen ]
-  * New upstream release.
-    - present/wnmd: Fix use after free on CRTC removal
-      (Closes: #920665).
-    - xwayland: Replace xwl_window::present_window with
-      ::present_flipped (Closes: #921734).
+  * Fix compatibility with standard xserver, correcting "Provides".
+  * Allow build on any architecture, for arm64 compatibility.
 
-  [ Andreas Boll ]
-  * Refresh 07_use-modesetting-driver-by-default-on-GeForce.diff.
+ -- JMCC <JMCC@armbian-forums>  Mon, 12 Oct 2020 20:53:27 +0200
 
- -- Andreas Boll <aboll@debian.org>  Tue, 05 Mar 2019 21:11:12 +0100
+xorg-server-rockchip (2:1.20.3-1endless1) eos; urgency=medium
+
+  * Change package name
+
+ -- Daniel Drake <drake@endlessm.com>  Wed, 13 Feb 2019 14:52:24 +0800
 
 xorg-server (2:1.20.3-1) unstable; urgency=medium
 

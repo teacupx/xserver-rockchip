@@ -14,7 +14,7 @@ build-source-stamp:
         --transform 's,^,xorg-server/,' \
 	--exclude=debian \
 	--exclude=autom4te.cache \
-        -cf - * | xz > build-source/xorg-server.tar.xz
+        -cf - * | xz > build-source/xorg-server-rockchip.tar.xz
 	>$@
 
 override_dh_auto_configure:
@@ -22,14 +22,9 @@ override_dh_auto_configure:
 		$(confflags) \
 		$(confflags_main) \
 		$(vars)
-	dh_auto_configure --builddirectory=debian/build/udeb -- \
-		$(confflags) \
-		$(confflags_udeb) \
-		$(vars)
 
 override_dh_auto_build:
 	dh_auto_build --builddirectory=debian/build/main
-	dh_auto_build --builddirectory=debian/build/udeb
 
 override_dh_auto_test:
 	dh_auto_test -- -j1 VERBOSE=1
@@ -40,8 +35,6 @@ build-indep: build-source-stamp
 override_dh_auto_install:
 	dh_auto_install --builddirectory=debian/build/main \
 		--destdir=debian/tmp/main
-	dh_auto_install --builddirectory=debian/build/udeb \
-		--destdir=debian/tmp/udeb
 
 	# oh, yuck.
 	find debian/tmp/*/usr/lib/xorg -type f -name '*.la' | \
@@ -68,8 +61,6 @@ override_dh_auto_install:
 ifneq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/tmp/main/usr/share/X11/xorg.conf.d
 	install -m 644 debian/local/10-*.conf debian/tmp/main/usr/share/X11/xorg.conf.d
-	install -d debian/tmp/udeb/usr/share/X11/xorg.conf.d
-	install -m 644 debian/local/10-*.conf debian/tmp/udeb/usr/share/X11/xorg.conf.d
 endif
 
 # Only read the first line, the rest of the file is used to determine
@@ -101,7 +92,6 @@ override_dh_fixperms-arch:
 	chmod ug+s $(CURDIR)/debian/xserver-xorg-legacy/usr/lib/xorg/Xorg.wrap
 
 override_dh_install:
-	dh_install -pxserver-xorg-core-udeb --sourcedir=debian/tmp/udeb
 	dh_install --remaining-packages --sourcedir=debian/tmp/main --fail-missing
 	install -d $(CURDIR)/debian/xserver-xorg-dev/usr/share/xserver-xorg
 	# Extract only the major ABI version:
@@ -114,21 +104,16 @@ override_dh_install:
 		test -n "$$abi_xinput"; echo inputabi=xorg-input-abi-$$abi_xinput >> debian/xserver-xorg-core.substvars && \
 		echo "xorg-input-abi-$$abi_xinput, xserver-xorg-core (>= $(serverminver))" > debian/xserver-xorg-dev/usr/share/xserver-xorg/xinputdep
 
-	# The udeb uses the same substvars:
-	cp debian/xserver-xorg-core.substvars debian/xserver-xorg-core-udeb.substvars
-
 	# save the configure flags so that packages like vnc, tightvnc, tigervnc
 	# know how the package was built.
 	echo 'xserver_confflags = $(confflags) $(confflags_main)' \
 		> debian/xserver-xorg-dev/usr/share/xserver-xorg/configure_flags.mk
 
 	install -m 755 -d debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core
-	install -m 755 debian/xserver-xorg-core.bug.script debian/xserver-xorg-core/usr/share/bug/xserver-xorg-core/script
+	install -m 755 debian/xserver-xorg-core-rockchip.bug.script debian/xserver-xorg-core-rockchip/usr/share/bug/xserver-xorg-core/script
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	install -d debian/xserver-xorg-core/lib/udev/rules.d
 	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core/lib/udev/rules.d
-	install -d debian/xserver-xorg-core-udeb/lib/udev/rules.d
-	install -m 644 debian/local/64-xorg-xkb.rules debian/xserver-xorg-core-udeb/lib/udev/rules.d
 endif
 
 override_dh_clean:
