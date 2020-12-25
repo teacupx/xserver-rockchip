@@ -110,6 +110,8 @@ Conflicts:
 Provides:
  ${videoabi},
  ${inputabi},
+ xorg-video-abi-24,
+ xorg-input-abi-24,
  xserver-xorg-core (= 2:1.20.3-2armbian1),
  xserver-xorg-video-modesetting,
 Description: Xorg X server - core server
@@ -286,3 +288,4 @@ Replaces:
 Description: setuid root Xorg server wrapper
  This package provides a wrapper for the Xorg X server, which is
  necessary for legacy drivers and non-Linux kernels.
+    
